@@ -1,0 +1,84 @@
+<body>
+  <canvas id="canvas"></canvas>
+</body>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const usedColors = new Set(); // To track used colors
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let circles = [];
+
+  class Circle {
+    constructor(x, y, r, dx, dy, color) {
+      this.x = x;
+      this.y = y;
+      this.r = r;
+      this.dx = dx;
+      this.dy = dy;
+      this.color = color;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+      ctx.strokeStyle = 'black'; // Set stroke color to black
+      ctx.stroke(); // Draw the border
+    }
+
+    update() {
+      if (this.x + this.r > canvas.width || this.x - this.r < 0) {
+        this.dx = -this.dx;
+        this.setNewColor(); // Set a new color when hitting the edge
+      }
+
+      if (this.y + this.r > canvas.height || this.y - this.r < 0) {
+        this.dy = -this.dy;
+        this.setNewColor(); // Set a new color when hitting the edge
+      }
+
+      this.x += this.dx;
+      this.y += this.dy;
+      this.draw();
+    }
+
+    setNewColor() {
+      let newColor;
+      do {
+        // Generate a random color in the format "#RRGGBB"
+        newColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      } while (usedColors.has(newColor)); // Ensure the color is unique
+
+      usedColors.add(newColor); // Add the new color to the set
+      this.color = newColor; // Set the new color for the circle
+    }
+  }
+
+  function init() {
+    for (let i = 0; i < 200; i++) {
+      const r = Math.random() * 15 + 1;
+      const x = Math.random() * (canvas.width - r * 2) + r;
+      const y = Math.random() * (canvas.height - r * 2) + r;
+      const dx = (Math.random() - 0.5) * 2;
+      const dy = (Math.random() - 0.5) * 2;
+      const color = 'white'; // Set the initial color to white
+      circles.push(new Circle(x, y, r, dx, dy, color));
+    }
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < circles.length; i++) {
+      circles[i].update();
+    }
+  }
+
+  init();
+  animate();
+</script>
